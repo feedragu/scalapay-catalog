@@ -6,8 +6,6 @@ import 'package:flutter/services.dart';
 sealed class PriceInput {
   const PriceInput();
 
-  static const maxLength = 10; // 7 digits, separator, 2 decimals
-
   static final _amount = RegExp(r'^(\d{1,7}([.,]\d{0,2})?|[.,]\d{1,2})$');
   static final inputFormatters = [const PriceInputFormatter()];
 

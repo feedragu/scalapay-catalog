@@ -1,10 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scalapay_catalog/config/runtime_config.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('reads trimmed values and rejects blank or missing keys', () {
     dotenv.loadFromString(
       envString: 'APP_ENV=dev\nCATALOG_SOURCE= trovaprezzi \nEMPTY=',
@@ -15,8 +15,8 @@ void main() {
     expect(() => RuntimeConfig.requiredValue('MISSING'), throwsStateError);
   });
 
-  test('the bundled dev file declares every key the app reads', () {
-    dotenv.loadFromString(envString: File('.env.dev').readAsStringSync());
+  test('loads the bundled file for the selected environment', () async {
+    await RuntimeConfig.load();
 
     for (final key in [
       'APP_ENV',

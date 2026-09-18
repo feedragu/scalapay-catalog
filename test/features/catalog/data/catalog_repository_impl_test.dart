@@ -125,9 +125,14 @@ void main() {
       final partial = pageOfResult(
         await repository(FakeHttpAdapter.json(pageOf(29))).search(query),
       );
+      // A group can carry more than one hit, so a page may exceed per_page.
+      final overfull = pageOfResult(
+        await repository(FakeHttpAdapter.json(pageOf(31))).search(query),
+      );
 
       expect(full.hasMore, isTrue);
       expect(partial.hasMore, isFalse);
+      expect(overfull.hasMore, isTrue);
     });
 
     test('returns TimeoutError on a timeout', () async {

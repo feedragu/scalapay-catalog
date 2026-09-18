@@ -1,10 +1,9 @@
-import 'package:equatable/equatable.dart';
 import 'package:scalapay_catalog/features/catalog/data/api/catalog_api_config.dart';
 import 'package:scalapay_catalog/features/catalog/domain/entities/price_range.dart';
 import 'package:scalapay_catalog/features/catalog/domain/entities/product_query.dart';
 import 'package:scalapay_catalog/features/catalog/domain/entities/product_sort.dart';
 
-class ProductSearchRequest extends Equatable {
+class ProductSearchRequest {
   const ProductSearchRequest({
     required this.config,
     required this.text,
@@ -67,7 +66,4 @@ class ProductSearchRequest extends Equatable {
       'country': config.country,
     };
   }
-
-  @override
-  List<Object?> get props => [config, text, sort, priceRange, page, perPage];
 }

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Mutation testing perimeter: the deterministic logic (domain rules, request
+     building, error mapping, bloc transitions, presenters). Widgets and the
+     design system are left out: every mutant re-runs the suite, and layout
+     code gives little signal per minute spent. See README, "Mutation testing". -->
+<mutations version="1.2">
+  <files>
+    <file>lib/features/catalog/domain/entities/installment_plan.dart</file>
+    <file>lib/features/catalog/domain/entities/price_range.dart</file>
+    <file>lib/features/catalog/domain/entities/product_query.dart</file>
+    <file>lib/features/catalog/data/api/product_search_request.dart</file>
+    <file>lib/features/catalog/data/api/models/product_dto_mapper.dart</file>
+    <file>lib/features/catalog/data/catalog_error_mapper.dart</file>
+    <file>lib/features/catalog/data/catalog_repository_impl.dart</file>
+    <file>lib/features/catalog/presentation/bloc/catalog_bloc.dart</file>
+    <file>lib/features/catalog/presentation/bloc/catalog_state.dart</file>
+    <file>lib/features/catalog/presentation/presenters/price_input.dart</file>
+    <file>lib/features/catalog/presentation/presenters/price_range_presenter.dart</file>
+    <file>lib/features/catalog/presentation/presenters/product_sort_presenter.dart</file>
+    <file>lib/config/runtime_config.dart</file>
+  </files>
+  <commands>
+    <command group="test" expected-return="0" timeout="120">flutter test --no-pub test/features test/config</command>
+  </commands>
+  <threshold failure="80">
+    <rating over="95" name="A"/>
+    <rating over="80" name="B"/>
+    <rating over="60" name="C"/>
+    <rating over="40" name="D"/>
+    <rating over="20" name="E"/>
+    <rating over="0" name="F"/>
+  </threshold>
+</mutations>
