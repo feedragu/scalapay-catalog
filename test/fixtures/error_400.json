@@ -1,0 +1,11 @@
+{
+  "httpStatusCode": 400,
+  "traceId": "804a2223-a77c-4ea6-b2c4-dacbb3236103",
+  "path": "/v1/products/search?country=IT&filter_by=&language=it&page=abc&partnerId=scalapayappit&per_page=30&q=nike&sort_by=_text_match:desc&source=trovaprezzi",
+  "errors": [
+    {
+      "message": "page must be a number conforming to the specified constraints",
+      "code": "InvalidNumber"
+    }
+  ]
+}

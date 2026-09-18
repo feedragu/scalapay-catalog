@@ -1,0 +1,73 @@
+{
+  "@@locale": "it",
+  "catalogTitle": "Esplora i prodotti",
+  "searchHint": "Cerca brand o negozi",
+  "searchAction": "Cerca",
+  "filtersChip": "Filtri",
+  "sortChip": "Ordina",
+  "filtersTitle": "Filtri",
+  "sortTitle": "Ordina",
+  "close": "Chiudi",
+  "priceRangeTitle": "Fascia di prezzo",
+  "priceMin": "Minimo",
+  "priceMax": "Massimo",
+  "clearAll": "Cancella tutto",
+  "showResults": "Mostra risultati",
+  "sortPriceAsc": "Prezzo crescente",
+  "sortPriceDesc": "Prezzo decrescente",
+  "sortNameAsc": "Nome A-Z",
+  "sortNameDesc": "Nome Z-A",
+  "fullPrice": "{amount}€ or",
+  "@fullPrice": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "installments": "{count} installments of €{amount}",
+  "@installments": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "amount": {"type": "String"}
+    }
+  },
+  "idleTitle": "Cerca un prodotto",
+  "idleMessage": "Scrivi un brand o un negozio per esplorare il catalogo",
+  "emptyTitle": "Nessun risultato",
+  "emptyMessage": "Prova con un altro termine o modifica i filtri",
+  "errorTitle": "Qualcosa è andato storto",
+  "errorNetwork": "Controlla la connessione e riprova",
+  "errorTimeout": "Il catalogo non risponde, riprova tra poco",
+  "errorServer": "Il catalogo non è disponibile al momento",
+  "errorInvalidResponse": "Il catalogo ha restituito dati non validi",
+  "errorUnknown": "Si è verificato un errore inatteso",
+  "retry": "Riprova",
+  "loadMoreFailed": "Impossibile caricare altri prodotti",
+  "loadingProducts": "Caricamento prodotti",
+  "resultsCount": "{count, plural, =1{1 prodotto trovato} other{{count} prodotti trovati}}",
+  "@resultsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "priceFrom": "Da {min} €",
+  "@priceFrom": {
+    "placeholders": {
+      "min": {"type": "String"}
+    }
+  },
+  "priceUpTo": "Fino a {max} €",
+  "@priceUpTo": {
+    "placeholders": {
+      "max": {"type": "String"}
+    }
+  },
+  "priceBetween": "Da {min} € a {max} €",
+  "@priceBetween": {
+    "placeholders": {
+      "min": {"type": "String"},
+      "max": {"type": "String"}
+    }
+  },
+  "invalidPriceNumber": "Inserisci un prezzo valido",
+  "invalidPriceRange": "Il prezzo minimo non può superare il massimo"
+}

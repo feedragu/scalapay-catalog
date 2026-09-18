@@ -1,0 +1,99 @@
+{
+  "page": 1,
+  "found": 3,
+  "facet_counts": [],
+  "grouped_hits": [
+    {
+      "hits": [
+        {
+          "document": {
+            "affiliate_url": "https://example.com/offer",
+            "brand": "Nike",
+            "brandId": "nike",
+            "category": "Moda > Scarpe > Sneakers e Scarpe Sportive",
+            "category_1": "Moda",
+            "category_2": "Scarpe > Sneakers e Scarpe Sportive",
+            "description": "Le Nike Air Force 1 Low White sono un'autentica icona della ",
+            "discount_percentage": 17,
+            "has_image": 1,
+            "id": "954308021",
+            "image": "https://pics.trovaprezzi.it/it-300x300/954308021.jpg",
+            "image_merchant": "https://immagini.trovaprezzi.it/negozi/madonninaresell.png?tr=w-80,h-30,cm-pad_resize,bg-FFFFFF",
+            "list_price": 119,
+            "merchant": "Madonnina Resell",
+            "merchantId": "madonninaresell",
+            "new_offer": false,
+            "selling_price": 99,
+            "tags": [],
+            "title": "Nike Air Force 1 Low White 07 Bianche Bianco",
+            "url": "https://example.com/offer"
+          }
+        }
+      ]
+    },
+    {
+      "hits": [
+        {
+          "document": {
+            "affiliate_url": "https://example.com/offer",
+            "brand": "Nike",
+            "brandId": "nike",
+            "category": "Moda > Scarpe > Sneakers e Scarpe Sportive",
+            "category_1": "Moda",
+            "category_2": "Scarpe > Sneakers e Scarpe Sportive",
+            "description": "Le scarpe Nike Air Force 1 '07 ispirate al modello iconico A",
+            "discount_percentage": 30,
+            "has_image": 1,
+            "id": "958832505",
+            "image": "https://pics.trovaprezzi.it/it-300x300/958832505.jpg",
+            "image_merchant": "https://immagini.trovaprezzi.it/negozi/maxisport.png?tr=w-80,h-30,cm-pad_resize,bg-FFFFFF",
+            "list_price": 120,
+            "merchant": "Maxi Sport",
+            "merchantId": "maxisport",
+            "new_offer": false,
+            "selling_price": 83.95,
+            "tags": [],
+            "title": "NIKE Sneaker Nike Air Force 1 '07 Wb",
+            "url": "https://example.com/offer"
+          }
+        }
+      ]
+    },
+    {
+      "hits": [
+        {
+          "document": {
+            "affiliate_url": "https://example.com/offer",
+            "brand": "Nike",
+            "brandId": "nike",
+            "category": "Moda > Abbigliamento > Abbigliamento Sportivo",
+            "category_1": "Moda",
+            "category_2": "Abbigliamento > Abbigliamento Sportivo",
+            "description": "Taglie disponibili: S;M;L;XL;XXL La maglia da casa Nike Inte",
+            "discount_percentage": 0,
+            "has_image": 1,
+            "id": "931904418",
+            "image": "https://pics.trovaprezzi.it/it-300x300/931904418.jpg",
+            "image_merchant": "https://immagini.trovaprezzi.it/negozi/nencini_sport.png?tr=w-80,h-30,cm-pad_resize,bg-FFFFFF",
+            "list_price": 94.95,
+            "merchant": "Nencini Sport",
+            "merchantId": "nencini sport",
+            "new_offer": false,
+            "selling_price": 94.9,
+            "tags": [],
+            "title": "NIKE INTER M DF JSY SS STADIUM HM 2026 Maglia Calcio Adulto",
+            "url": "https://example.com/offer",
+            "isMerchantCard": true,
+            "merchantToken": "0LR90CZK9"
+          }
+        }
+      ]
+    }
+  ],
+  "merchantDetectedFromQuery": {
+    "id": "nike",
+    "logo": "https://cdn.sanity.io/images/t4wtxq3r/dev/3e7a62772288324e37e999600f6539920b1d1039-530x308.png",
+    "name": "Nike",
+    "merchantToken": "8KDS3SPEL"
+  }
+}

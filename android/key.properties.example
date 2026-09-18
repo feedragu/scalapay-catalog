@@ -1,0 +1,7 @@
+# Copy to android/key.properties (git-ignored) and point it at your upload key:
+#   keytool -genkey -v -keystore android/upload-keystore.jks -keyalg RSA \
+#     -keysize 2048 -validity 10000 -alias upload
+storeFile=upload-keystore.jks
+storePassword=
+keyAlias=upload
+keyPassword=
