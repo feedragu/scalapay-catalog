@@ -25,13 +25,17 @@ class CatalogRepositoryImpl implements CatalogRepository {
     try {
       final response = await _api.searchProducts(request.toQueryParameters());
       final products = [for (final dto in response.products) dto.toDomain()];
-      // `found` mirrors the page size rather than a total, so the only end
-      // signal is a page shorter than the requested size.
+      // `found` mirrors the page size rather than a total, so the end is a
+      // short page or the API window: past 300 results the gateway serves
+      // page 1 again instead of an empty page (verified).
+      final window = query.page * request.perPage;
       return Success(
         ProductPage(
           products: products,
           page: query.page,
-          hasMore: products.length >= request.perPage,
+          hasMore:
+              products.length >= request.perPage &&
+              window < ProductSearchRequest.maxWindow,
         ),
       );
     } catch (error) {

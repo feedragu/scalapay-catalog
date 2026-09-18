@@ -152,7 +152,7 @@ class _QueryChip extends StatelessWidget {
         icon: icon,
         label: label,
         labelGap: labelGap,
-        active: description != null,
+        badgeCount: description == null ? null : 1,
         activeDescription: description,
         onTap: onTap,
       ),

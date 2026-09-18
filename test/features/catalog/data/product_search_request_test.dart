@@ -7,12 +7,8 @@ import 'package:scalapay_catalog/features/catalog/domain/entities/product_sort.d
 import '../../../helpers/fake_http_adapter.dart';
 
 void main() {
-  ProductSearchRequest request(ProductQuery query, {int perPage = 30}) =>
-      ProductSearchRequest.fromQuery(
-        query,
-        config: testApiConfig,
-        perPage: perPage,
-      );
+  ProductSearchRequest request(ProductQuery query) =>
+      ProductSearchRequest.fromQuery(query, config: testApiConfig);
 
   group('ProductSearchRequest', () {
     test('builds the documented generic search from the config', () {
@@ -73,13 +69,17 @@ void main() {
       expect(params['maxPrice'], '9999999.99');
     });
 
-    test('carries page and page size', () {
-      final params = request(
-        const ProductQuery(page: 3),
-        perPage: 10,
-      ).toQueryParameters();
+    test('carries the page and the 30-item page size', () {
+      final params = request(const ProductQuery(page: 3)).toQueryParameters();
       expect(params['page'], '3');
-      expect(params['per_page'], '10');
+      expect(params['per_page'], '30');
+    });
+
+    test('locally sorted queries ask for the widest window in one request', () {
+      for (final sort in [ProductSort.nameAsc, ProductSort.nameDesc]) {
+        final params = request(ProductQuery(sort: sort)).toQueryParameters();
+        expect(params['per_page'], '300');
+      }
     });
 
     test('encodes the sort separator and free text as a URL query', () {

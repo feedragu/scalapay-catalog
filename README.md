@@ -1,12 +1,13 @@
 # Scalapay Catalog
 
 Flutter implementation of the "Product catalog" screen from the Figma file,
-using the Scalapay catalog API. Search, sort, price filter, infinite scroll.
+backed by the Scalapay catalog API: search, sort, price filter and infinite
+scroll.
 
 ## Requirements
 
 - Flutter 3.44.4 (Dart 3.12)
-- iOS 13+ / Android
+- iOS 13+, Android 7 (API 24)+
 
 ## Setup
 
@@ -15,12 +16,12 @@ flutter pub get
 flutter run
 ```
 
-`.env.dev` is committed: it only contains the API host and the partner
-parameters from the brief, no secrets. `APP_ENV` picks the env file (default
+`.env.dev` is committed because it holds nothing secret, only the API host and
+the partner parameters from the brief. `APP_ENV` picks the env file (default
 `dev`).
 
-Generated files are committed. If you change a DTO, the API interface or the
-ARB file:
+Generated files are committed too. After changing a DTO, the API interface or
+the ARB file, regenerate them:
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs
@@ -33,24 +34,60 @@ flutter gen-l10n
 flutter test
 ```
 
-Unit, bloc, widget and golden tests, everything offline. Integration test
-(fake repository, runs on device/simulator):
+Unit, bloc, widget and golden tests; none of them touch the network. The
+integration test uses a fake repository and runs on a device or simulator:
 
 ```bash
 flutter test integration_test -d <device-id>
 ```
 
-Goldens were generated on macOS. On Linux the font rendering is slightly
-different, so they need to be regenerated there or compared with a tolerance.
-To update them: `flutter test --update-goldens test/goldens`.
+I generated the goldens on macOS. Linux rasterizes fonts slightly differently,
+so on Linux either regenerate them or compare with a tolerance. To update them:
+`flutter test --update-goldens test/goldens`.
 
-Lint / format / metrics:
+Format, lint and metrics gates:
 
 ```bash
 dart format --output=none --set-exit-if-changed .
 flutter analyze --fatal-infos
 dart run dart_code_linter:metrics analyze lib --set-exit-on-violation-level=warning
 ```
+
+Mutation testing (`mutation_test`, config in `mutation_test.xml`) covers the
+deterministic layers: domain rules, request building, error mapping,
+repository, bloc, presenters and config. Every mutant re-runs the unit suite,
+so it takes about 40 minutes; widgets and the design system are left out on
+purpose (little signal per minute). Needs an lcov file so uncovered lines are
+skipped:
+
+```bash
+flutter test --coverage
+dart run mutation_test -c coverage/lcov.info mutation_test.xml
+```
+
+Last run: 127 mutants, 126 detected (rating A). The survivor is the
+`APP_ENV` mismatch guard in `RuntimeConfig`, unreachable without a second env
+asset.
+
+## What the tests cover
+
+115 tests.
+
+- Data: request params (page size vs 300 window), DTO parsing against a real
+  response fixture, repository through Retrofit with a fake Dio adapter (ok,
+  timeout, offline, 400, truncated JSON, wrong shape, end of the window).
+- Domain: price range rules, installment split, use case (name sorts applied
+  locally, paging closed, failures passed through).
+- Bloc (`bloc_test`): immediate feedback + debounce, submit, empty result,
+  failure + retry, sort and filter reload, stale responses ignored, paging,
+  failed page, duplicate page, new search while a page is loading.
+- Widgets: all states, debounce through the real text field, both sheets and
+  their validation, infinite scroll, inline retry, image placeholder, widths
+  from 320 to 800 px, text scale 2.0, collapsing title and pinned chips,
+  scroll position on new query vs new page, semantics (field name, chip
+  badges, headings, live regions).
+- Goldens: main screen and the two sheets at 375×812 with Poppins, compared
+  against the Figma exports. A few geometry tests for the measured sizes.
 
 ## Project structure
 
@@ -67,21 +104,21 @@ lib/
 ```
 
 Standard layered setup: widget -> bloc -> use case -> repository -> API. The
-repository returns `Result<ProductPage>`, so the bloc only deals with
-`Success`/`Failure` and a sealed `CatalogError`, never with Dio or DTOs.
+repository returns `Result<ProductPage>`, so the bloc only sees
+`Success`/`Failure` and a sealed `CatalogError`, never Dio or DTOs.
 
-DI is done with `provider` (see `initProviders`). Tests override the repository
-and the image cache manager with their own providers.
+`provider` handles DI (see `initProviders`). Tests override the repository and
+the image cache manager with their own providers.
 
-Design system widgets don't know about the catalog: `AppProductCard` takes
+Design system widgets know nothing about the catalog: `AppProductCard` takes
 strings, `AppProductGrid` takes an item builder, sheets take labels and
 callbacks.
 
 ## State management
 
-Bloc. There are several inputs feeding the same list (typing, search button,
-sort, filter, paging, retry), so having explicit events and one immutable state
-made it easier to test the edge cases without widgets.
+Bloc. Several inputs feed the same list (typing, the search button, sort,
+filter, paging, retry), and explicit events plus one immutable state made the
+edge cases testable without widgets.
 
 `CatalogState`: `status` (initial / loading / success / failure), current
 `ProductQuery`, products, and paging flags (`hasMore`, `isLoadingMore`,
@@ -92,19 +129,19 @@ Behaviour:
 - Typing shows skeletons immediately, the request fires after 400 ms of
   inactivity (`debounce` + `switchMap`). Submit, sort and filter fire right
   away.
-- Each request gets an incrementing id; responses with an old id are
-  discarded, so a slow "nike" can't overwrite "adidas". Requests are not
-  cancelled, just ignored.
+- Each request gets an incrementing id and the bloc discards responses with
+  an old id, so a slow "nike" cannot overwrite "adidas". The app never cancels
+  a request, it only ignores the reply.
 - Sort/filter set before the first search are applied to it.
-- Paging appends without changing status. If a page fails the loaded items
-  stay and an inline retry appears; scrolling further doesn't retry
-  automatically.
+- Paging appends without changing status and stops at the API window (300
+  results, see API notes). If a page fails the loaded items stay and an
+  inline retry appears; scrolling further doesn't retry automatically.
 
 ## API notes
 
-Dio + Retrofit, one endpoint: `GET /v1/products/search`. Timeouts: 10 s
-connect, 30 s receive (the first call after the host has been idle can take
-~20 s).
+Dio + Retrofit, one endpoint: `GET /v1/products/search`. Timeouts are 10 s to
+connect and 30 s to receive, because the first call after the host has been
+idle can take about 20 s.
 
 `CatalogErrorMapper` maps `DioException` / JSON errors into `TimeoutError`,
 `NetworkUnavailableError`, `ServerError(statusCode)`, `InvalidResponseError`,
@@ -112,50 +149,72 @@ connect, 30 s receive (the first call after the host has been idle can take
 
 Things noticed while testing against the real API:
 
-- `found` equals the page size, not the total, so there's no total count.
-  Paging is 30 per page, the list ends when a page comes back shorter.
-- `sort_by=title:asc|desc` is ignored by the backend (results come back in
-  relevance order). The params are still sent, so "Nome A-Z / Z-A" will work
-  when the backend supports it. No client-side sorting since it would only
-  sort the loaded pages.
-- `selling_price` can be `int` or `double`. `has_image = 0` means the URL is
-  not usable.
-- No installment data in the response. The "3 rate da" line is
-  `selling_price / 3` (`InstallmentPlan.payInThree`). That's why the card shows
-  28,33 for 85,00 € while the Figma mockup shows 23,33.
+- `found` equals the page size, not the total, so there is no total count.
+  Pages hold 30 items and the list ends on a short page or at the API window:
+  a query serves at most 300 results, and past that the gateway returns page
+  1 again (page 11 == page 1 on every query I tried). The repository therefore
+  stops at 300 and the bloc drops ids it already has. The Scalapay app behaves
+  the same way: after ten pages it stops loading.
+- The brief allows `sort_by` only with `_text_match` or `selling_price`, and
+  the gateway enforces exactly that: any other key (`title`, `list_price`,
+  `id`, even `foo`) or a bad direction gets a 200 with the relevance order,
+  and in `title:asc,selling_price:asc` only `selling_price` is applied. The
+  design's "Nome A-Z / Z-A" are therefore outside the API contract. See
+  "Name sorting" below for what the app does about it.
+- `per_page` is capped at 300 (asking for 500 returns 300); the same 300 is
+  the whole window a query can ever reach.
+- Of the two documented hosts only `catalog-api.dev-cat.scalapay.com` is
+  usable: `catalog-api.dev.scalapay.com` answers 401 "Authorization header
+  not found" and the brief provides no credentials.
+- `minPrice` / `maxPrice` are inclusive and server-side, and work with a
+  single bound too (`maxPrice=10.0` → everything ≤ 10).
+- `selling_price` arrives as `int` or `double`. `has_image = 0` means the URL
+  is not usable.
+- The response carries no installment data. The "3 rate da" line is
+  `selling_price / 3` (`InstallmentPlan.payInThree`), which is why the card
+  shows 28,33 for 85,00 € while the Figma mockup shows 23,33.
 - A malformed document fails the whole page with `InvalidResponseError`
-  instead of being skipped.
+  rather than being skipped.
 
-## Testing
+## Name sorting
 
-108 tests, no network.
+The design offers "Nome A-Z / Z-A", the API cannot sort by title, and a paged
+list cannot be sorted on the client: ordering only the pages already loaded
+would reshuffle the list on every scroll and never produce the real order. I
+settled on a small compromise and wrote it down here and in the code:
 
-- Data: request params, DTO parsing against a real response fixture, repository
-  through Retrofit with a fake Dio adapter (ok, timeout, offline, 400, truncated
-  JSON, wrong shape).
-- Bloc (`bloc_test`): debounce, submit, empty result, failure + retry, sort and
-  filter reload, stale responses ignored, paging, failed page, new search while
-  a page is loading.
-- Widgets: all states, debounce through the real text field, both sheets and
-  their validation, infinite scroll, inline retry, image placeholder, 320–800 px
-  widths, text scale 2.0, semantics.
-- Goldens: main screen and the two sheets at 375×812 with Poppins, compared
-  against the Figma exports. A few geometry tests for the measured sizes.
+- the request still sends `sort_by=title:asc|desc`, the design's intent, so
+  the fallback becomes redundant the day the gateway allows it;
+- for those two sorts the repository asks for the whole window the API serves
+  in one request (`per_page=300`, about 1 to 2 s) and `SearchProductsUseCase`
+  sorts it case-insensitively and closes paging (`hasMore = false`), so the
+  list the user sees is complete and never reorders;
+- 300 is also the most any query can return through paging, so the
+  alphabetical list covers the same products the other sorts can reach, in one
+  request instead of ten. Relevance and price stay paged, 30 at a time.
+
+Hiding the two options would have matched the API but not the design, and
+leaving them inert would have looked broken. For the record, the production
+Scalapay app exposes three sorts on the catalog (featured, price asc/desc).
 
 ## Implementation notes
 
-- Two columns at every width like the design; cards just get wider on tablet.
-  The grid is a `SliverList` of rows instead of `SliverGrid` because the text
-  block has variable height (two-line titles, large text scale).
+- Two columns at every width, like the design; cards simply get wider on a
+  tablet. The grid is a `SliverList` of rows rather than a `SliverGrid`
+  because the text block has variable height (two-line titles, large text
+  scale).
 - Images via `cached_network_image` with a max decode width; placeholder on
   missing/failed image.
-- Search bar and chips stay pinned while the title scrolls away. A dot on
-  "Filtri"/"Ordina" shows that a filter/sort is active (not in the Figma, there
-  is no active state for the chips). Tapping the selected sort again clears it,
-  since there's no "relevance" option in the sheet.
-- Price inputs: digits with `,` or `.` and max two decimals. Inverted ranges
-  are blocked by the validator before any request.
-- Italian only, locale-locked to match the design. Strings in an ARB file.
+- Scrolling follows the Scalapay app: the large title contracts into a
+  centred compact bar with a divider, the search bar scrolls away with the
+  content and the chips stay pinned under the bar. A count badge on
+  "Filtri"/"Ordina" shows an applied filter/sort, as in the Scalapay app (the
+  Figma has no active state for the chips). Tapping the selected sort again
+  clears it, since there's no "relevance" option in the sheet.
+- Price inputs accept digits with `,` or `.` and at most two decimals. The
+  validator blocks inverted ranges before any request goes out.
+- Italian only, locale-locked to match the design, with the strings in an ARB
+  file.
 - Palette names follow the Figma color styles (`lilac900`, `grayscale700`).
 - Accessibility checked with the Android accessibility tree on a Pixel 9:
   chips announce the applied filter/sort, cards are read as one item, sort
@@ -164,18 +223,18 @@ Things noticed while testing against the real API:
 
 ## Out of scope
 
-Kept to what's in the Figma. Product detail / merchant page are not there, so
-not implemented; `Product` already carries `id`, `merchant` and image URL, and
-the card would only need an `onTap`.
+I kept to what is in the Figma. There is no product detail or merchant page,
+so none is implemented; `Product` already carries `id`, `merchant` and the
+image URL, and the card would only need an `onTap`.
 
-Not done: request cancellation, results cache, state restoration, crash
-reporting/analytics (`UnknownError` keeps the original exception for that).
+Also not done: request cancellation, a results cache, state restoration, crash
+reporting and analytics (`UnknownError` keeps the original exception for that).
 
 ## Release
 
-Android: R8 + resource shrinking, signing from a git-ignored `key.properties`
-(falls back to debug), no cleartext traffic. Both platforms build with
-obfuscation:
+Android uses R8 with resource shrinking, signs from a git-ignored
+`key.properties` (falling back to the debug key) and refuses cleartext
+traffic. Both platforms build with obfuscation:
 
 ```bash
 flutter build appbundle --release --obfuscate --split-debug-info=build/symbols

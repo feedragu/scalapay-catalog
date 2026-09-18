@@ -135,6 +135,22 @@ void main() {
       expect(overfull.hasMore, isTrue);
     });
 
+    test('stops at the 300-result window the API serves', () async {
+      final page9 = pageOfResult(
+        await repository(
+          FakeHttpAdapter.json(pageOf(30)),
+        ).search(query.copyWith(page: 9)),
+      );
+      final page10 = pageOfResult(
+        await repository(
+          FakeHttpAdapter.json(pageOf(30)),
+        ).search(query.copyWith(page: 10)),
+      );
+
+      expect(page9.hasMore, isTrue);
+      expect(page10.hasMore, isFalse);
+    });
+
     test('returns TimeoutError on a timeout', () async {
       final adapter = FakeHttpAdapter(
         (options) => throw DioException.receiveTimeout(

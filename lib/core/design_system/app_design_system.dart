@@ -27,3 +27,4 @@ export 'package:scalapay_catalog/core/design_system/organisms/app_sheet_section.
 export 'package:scalapay_catalog/core/design_system/organisms/app_sort_option_list.dart';
 export 'package:scalapay_catalog/core/design_system/templates/app_bottom_sheet_template.dart';
 export 'package:scalapay_catalog/core/design_system/templates/app_catalog_template.dart';
+export 'package:scalapay_catalog/core/design_system/templates/app_collapsing_title.dart';

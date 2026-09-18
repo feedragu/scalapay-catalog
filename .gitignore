@@ -55,3 +55,6 @@ app.*.map.json
 !.env.example
 !.env.*.example
 !.env.dev
+
+# Golden diffs written by flutter test on failure
+test/goldens/failures/

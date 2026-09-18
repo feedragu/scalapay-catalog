@@ -13,10 +13,11 @@ class ProductSearchRequest {
     this.perPage = defaultPerPage,
   });
 
+  // Locally sorted queries ask for the widest window the API serves in one
+  // request (verified: per_page is capped at 300) instead of a page.
   factory ProductSearchRequest.fromQuery(
     ProductQuery query, {
     required CatalogApiConfig config,
-    int perPage = defaultPerPage,
   }) {
     return ProductSearchRequest(
       config: config,
@@ -24,11 +25,12 @@ class ProductSearchRequest {
       sort: query.sort,
       priceRange: query.priceRange,
       page: query.page,
-      perPage: perPage,
+      perPage: query.sort.isLocal ? maxWindow : defaultPerPage,
     );
   }
 
   static const defaultPerPage = 30;
+  static const maxWindow = 300;
 
   final CatalogApiConfig config;
   final String text;
@@ -37,10 +39,10 @@ class ProductSearchRequest {
   final int page;
   final int perPage;
 
-  // Sorting is the server's job on a paged list. The dev API currently
-  // honours only selling_price and ignores title (verified: same order for
-  // title:asc and title:desc), so the name sorts are requested as designed
-  // and take effect once the backend supports them.
+  // The gateway allow-lists _text_match and selling_price and silently
+  // ignores anything else (verified). Name sorts are still requested as
+  // designed, so the local fallback becomes redundant once the backend
+  // supports them.
   String get sortBy => switch (sort) {
     ProductSort.relevance => '_text_match:desc',
     ProductSort.priceAsc => 'selling_price:asc',

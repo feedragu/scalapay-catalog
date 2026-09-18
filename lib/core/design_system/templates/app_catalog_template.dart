@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:scalapay_catalog/core/design_system/foundations/app_palette.dart';
 import 'package:scalapay_catalog/core/design_system/foundations/app_spacing.dart';
-import 'package:scalapay_catalog/core/design_system/foundations/app_typography.dart';
+import 'package:scalapay_catalog/core/design_system/templates/app_collapsing_title.dart';
 
+// Scroll behaviour follows the Scalapay app: the large title contracts into a
+// compact centred bar, the search bar scrolls away with the content and the
+// chips stay pinned under the bar.
 class AppCatalogTemplate extends StatelessWidget {
   const AppCatalogTemplate({
     required this.title,
@@ -22,19 +25,28 @@ class AppCatalogTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.appPalette;
     return Scaffold(
-      backgroundColor: context.appPalette.grayscale100,
+      backgroundColor: palette.grayscale100,
       body: SafeArea(
         bottom: false,
         child: CustomScrollView(
           controller: controller,
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           slivers: [
-            SliverToBoxAdapter(child: _Header(title: title)),
-            // The title scrolls away; search and chips stay reachable.
+            AppCollapsingTitle(title: title),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x16),
+                child: searchBar,
+              ),
+            ),
             PinnedHeaderSliver(
               child: _RevealBoundary(
-                child: _Controls(searchBar: searchBar, chips: chips),
+                child: ColoredBox(
+                  color: palette.grayscale100,
+                  child: _ChipsRow(chips: chips),
+                ),
               ),
             ),
             ...body,
@@ -45,8 +57,8 @@ class AppCatalogTemplate extends StatelessWidget {
   }
 }
 
-// The pinned controls are always visible, so a request to reveal one of them
-// (focusing the search field, accessibility focus) must not move the list.
+// The pinned chips are always visible, so a request to reveal one of them
+// (accessibility focus) must not move the list.
 class _RevealBoundary extends SingleChildRenderObjectWidget {
   const _RevealBoundary({required Widget super.child});
 
@@ -63,57 +75,6 @@ class _RenderRevealBoundary extends RenderProxyBox {
     Duration duration = Duration.zero,
     Curve curve = Curves.ease,
   }) {}
-}
-
-class _Controls extends StatelessWidget {
-  const _Controls({required this.searchBar, required this.chips});
-
-  final Widget searchBar;
-  final List<Widget> chips;
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: context.appPalette.grayscale100,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x16),
-            child: searchBar,
-          ),
-          _ChipsRow(chips: chips),
-        ],
-      ),
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.x26,
-        AppSpacing.x57,
-        AppSpacing.x26,
-        AppSpacing.x10,
-      ),
-      child: Semantics(
-        header: true,
-        child: Text(
-          title,
-          style: AppTypography.h2(
-            color: context.appPalette.typographyAllHeaders,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _ChipsRow extends StatelessWidget {

@@ -126,10 +126,13 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     switch (result) {
       case Success():
         final page = result.value;
+        // Guards the grid against an overlapping page (duplicate ids).
+        final known = {for (final product in state.products) product.id};
+        final fresh = page.products.where((p) => !known.contains(p.id));
         emit(
           state.copyWith(
             query: query,
-            products: [...state.products, ...page.products],
+            products: [...state.products, ...fresh],
             hasMore: page.hasMore,
             isLoadingMore: false,
           ),

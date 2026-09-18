@@ -472,19 +472,25 @@ void main() {
       expect(offsetOf(tester), greaterThan(400));
     }
 
-    testWidgets('focusing the search field does not move the list', (
+    testWidgets('the title contracts and the chips stay pinned', (
       tester,
     ) async {
       repository.respondWith(products(30));
       await tester.pumpCatalog(repository);
       await tester.search('nike');
-      await scrollDown(tester);
-      final offset = offsetOf(tester);
+      final expanded = tester.getRect(find.text(l10nIt.catalogTitle));
+      expect(expanded.left, 26);
+      expect(expanded.top, 57);
 
-      await tester.tap(find.byType(TextField));
-      await tester.pumpAndSettle();
-      expect(tester.testTextInput.isVisible, isTrue);
-      expect(offsetOf(tester), offset);
+      await scrollDown(tester);
+      final compact = tester.getRect(find.text(l10nIt.catalogTitle));
+      expect(compact.height, lessThan(expanded.height));
+      expect(compact.center.dx, closeTo(375 / 2, 1));
+      expect(compact.top, 16);
+      final chips = tester.getRect(find.byType(AppChip).first);
+      expect(chips.top, closeTo(compact.bottom + 16 + 1 + 13, 1));
+      expect(find.byType(TextField, skipOffstage: false), findsOneWidget);
+      expect(find.byType(TextField), findsNothing);
     });
 
     testWidgets('a new search restarts from the top, a new page does not', (
@@ -507,10 +513,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(offsetOf(tester), offset);
 
-      await tester.enterText(find.byType(TextField), 'adidas');
-      await tester.pump();
-      expect(offsetOf(tester), 0);
-      await tester.pump(searchDebounce);
+      // A new query (sort here, the field is scrolled away) goes back to the top.
+      tester
+          .element(find.byType(CatalogScreen))
+          .read<CatalogBloc>()
+          .add(const CatalogSortChanged(ProductSort.priceAsc));
       await tester.pumpAndSettle();
       expect(offsetOf(tester), 0);
     });

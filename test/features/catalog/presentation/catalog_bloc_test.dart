@@ -249,17 +249,18 @@ void main() {
     );
 
     blocTest<CatalogBloc, CatalogState>(
-      'a name sort is requested from the server and its order is kept',
+      'a name sort is requested, applied locally and closes pagination',
       build: build,
       setUp: () => repository.respondWith([
         product(title: 'zaino'),
         product(id: '2', title: 'Adidas'),
-      ]),
+      ], hasMore: true),
       seed: () =>
           const CatalogState(status: CatalogStatus.success, query: nike),
       act: (bloc) => bloc.add(const CatalogSortChanged(ProductSort.nameAsc)),
       verify: (bloc) {
-        expect(bloc.state.products.map((p) => p.title), ['zaino', 'Adidas']);
+        expect(bloc.state.products.map((p) => p.title), ['Adidas', 'zaino']);
+        expect(bloc.state.hasMore, isFalse);
         expect(repository.queries.single.sort, ProductSort.nameAsc);
       },
     );
@@ -421,6 +422,23 @@ void main() {
         ..add(const CatalogNextPageRequested()),
       expect: () => const <CatalogState>[],
       verify: (_) => expect(repository.queries, isEmpty),
+    );
+
+    blocTest<CatalogBloc, CatalogState>(
+      'a page repeating already loaded ids appends nothing',
+      build: build,
+      setUp: () => repository.respondWith(products(3), hasMore: true),
+      seed: () => CatalogState(
+        status: CatalogStatus.success,
+        query: nike,
+        products: products(3),
+        hasMore: true,
+      ),
+      act: (bloc) => bloc.add(const CatalogNextPageRequested()),
+      verify: (bloc) {
+        expect(bloc.state.products, hasLength(3));
+        expect(bloc.state.query.page, 2);
+      },
     );
 
     blocTest<CatalogBloc, CatalogState>(
