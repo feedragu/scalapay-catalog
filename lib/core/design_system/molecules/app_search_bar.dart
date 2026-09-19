@@ -9,7 +9,7 @@ import 'package:scalapay_catalog/core/design_system/foundations/app_sizes.dart';
 import 'package:scalapay_catalog/core/design_system/foundations/app_spacing.dart';
 import 'package:scalapay_catalog/core/design_system/foundations/app_typography.dart';
 
-class AppSearchBar extends StatelessWidget {
+class AppSearchBar extends StatefulWidget {
   const AppSearchBar({
     required this.controller,
     required this.hintText,
@@ -33,33 +33,60 @@ class AppSearchBar extends StatelessWidget {
   );
 
   @override
+  State<AppSearchBar> createState() => _AppSearchBarState();
+}
+
+class _AppSearchBarState extends State<AppSearchBar> {
+  final _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final palette = context.appPalette;
-    return Container(
-      constraints: const BoxConstraints(minHeight: AppSizes.searchBarHeight),
-      padding: _padding,
-      decoration: BoxDecoration(
-        color: palette.grayscale100,
-        borderRadius: BorderRadius.circular(AppBorderRadius.pill),
-        border: Border.all(color: palette.border300),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _SearchField(
-              controller: controller,
-              hintText: hintText,
-              onChanged: onChanged,
-              onSubmitted: onSubmitted,
-            ),
+    // The field only covers its text line, so the pill itself must forward
+    // taps to it. Sharing the tap-region group keeps those taps from counting
+    // as "outside" and blurring the field first.
+    return TapRegion(
+      groupId: this,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _focusNode.requestFocus,
+        child: Container(
+          constraints: const BoxConstraints(
+            minHeight: AppSizes.searchBarHeight,
           ),
-          const SizedBox(width: AppSpacing.x10),
-          AppCircleIconButton(
-            icon: AppIcon(AppIconKind.search, color: palette.grayscale100),
-            tooltip: searchLabel,
-            onPressed: () => onSubmitted(controller.text),
+          padding: AppSearchBar._padding,
+          decoration: BoxDecoration(
+            color: palette.grayscale100,
+            borderRadius: BorderRadius.circular(AppBorderRadius.pill),
+            border: Border.all(color: palette.border300),
           ),
-        ],
+          child: Row(
+            children: [
+              Expanded(
+                child: _SearchField(
+                  controller: widget.controller,
+                  focusNode: _focusNode,
+                  tapRegionGroupId: this,
+                  hintText: widget.hintText,
+                  onChanged: widget.onChanged,
+                  onSubmitted: widget.onSubmitted,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.x10),
+              AppCircleIconButton(
+                icon: AppIcon(AppIconKind.search, color: palette.grayscale100),
+                tooltip: widget.searchLabel,
+                onPressed: () => widget.onSubmitted(widget.controller.text),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -68,12 +95,16 @@ class AppSearchBar extends StatelessWidget {
 class _SearchField extends StatelessWidget {
   const _SearchField({
     required this.controller,
+    required this.focusNode,
+    required this.tapRegionGroupId,
     required this.hintText,
     required this.onChanged,
     required this.onSubmitted,
   });
 
   final TextEditingController controller;
+  final FocusNode focusNode;
+  final Object tapRegionGroupId;
   final String hintText;
   final ValueChanged<String> onChanged;
   final ValueChanged<String> onSubmitted;
@@ -93,6 +124,8 @@ class _SearchField extends StatelessWidget {
           inputType: ui.SemanticsInputType.search,
           child: TextField(
             controller: controller,
+            focusNode: focusNode,
+            groupId: tapRegionGroupId,
             onChanged: onChanged,
             onSubmitted: onSubmitted,
             onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),

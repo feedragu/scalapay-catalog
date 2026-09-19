@@ -39,16 +39,15 @@ class ProductSearchRequest {
   final int page;
   final int perPage;
 
-  // The gateway allow-lists _text_match and selling_price and silently
-  // ignores anything else (verified). Name sorts are still requested as
-  // designed, so the local fallback becomes redundant once the backend
-  // supports them.
+  // The contract allows `_text_match` and `selling_price` only (the gateway
+  // silently ignores anything else). Name sorts stay inside the contract:
+  // they ask for the relevance window and SearchProductsUseCase orders it.
   String get sortBy => switch (sort) {
-    ProductSort.relevance => '_text_match:desc',
+    ProductSort.relevance ||
+    ProductSort.nameAsc ||
+    ProductSort.nameDesc => '_text_match:desc',
     ProductSort.priceAsc => 'selling_price:asc',
     ProductSort.priceDesc => 'selling_price:desc',
-    ProductSort.nameAsc => 'title:asc',
-    ProductSort.nameDesc => 'title:desc',
   };
 
   Map<String, String> toQueryParameters() {

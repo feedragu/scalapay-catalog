@@ -36,15 +36,10 @@ void main() {
       );
     });
 
-    test('name sorts are requested from the server', () {
-      expect(
-        request(const ProductQuery(sort: ProductSort.nameAsc)).sortBy,
-        'title:asc',
-      );
-      expect(
-        request(const ProductQuery(sort: ProductSort.nameDesc)).sortBy,
-        'title:desc',
-      );
+    test('name sorts stay inside the contract and ask for relevance', () {
+      for (final sort in [ProductSort.nameAsc, ProductSort.nameDesc]) {
+        expect(request(ProductQuery(sort: sort)).sortBy, '_text_match:desc');
+      }
     });
 
     test('adds minPrice and maxPrice only when set', () {

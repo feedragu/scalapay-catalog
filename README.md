@@ -183,12 +183,13 @@ list cannot be sorted on the client: ordering only the pages already loaded
 would reshuffle the list on every scroll and never produce the real order. I
 settled on a small compromise and wrote it down here and in the code:
 
-- the request still sends `sort_by=title:asc|desc`, the design's intent, so
-  the fallback becomes redundant the day the gateway allows it;
-- for those two sorts the repository asks for the whole window the API serves
-  in one request (`per_page=300`, about 1 to 2 s) and `SearchProductsUseCase`
-  sorts it case-insensitively and closes paging (`hasMore = false`), so the
-  list the user sees is complete and never reorders;
+- the request stays inside the contract: for those two sorts it asks for the
+  relevance order (`sort_by=_text_match:desc`) and for the whole window the
+  API serves in one request (`per_page=300`, about 1 to 2 s);
+- `SearchProductsUseCase` sorts that window case-insensitively and closes
+  paging (`hasMore = false`), so the list the user sees is complete and never
+  reorders. It is the one place that knows about the workaround: a backend
+  sort would replace it there;
 - 300 is also the most any query can return through paging, so the
   alphabetical list covers the same products the other sorts can reach, in one
   request instead of ten. Relevance and price stay paged, 30 at a time.

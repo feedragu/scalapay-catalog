@@ -7,9 +7,8 @@ enum ProductSort {
   nameAsc,
   nameDesc;
 
-  // The catalog API only sorts by relevance and price. Name sorts are
-  // requested anyway (title:asc/desc) but, until the backend honours them,
-  // the domain applies them locally on the widest window the API returns.
+  // The catalog API only sorts by relevance and price. Name sorts are applied
+  // by the domain on the widest window the API returns for the query.
   bool get isLocal => this == nameAsc || this == nameDesc;
 
   List<Product> apply(List<Product> products) {
