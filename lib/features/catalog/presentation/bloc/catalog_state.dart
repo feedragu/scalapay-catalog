@@ -26,7 +26,8 @@ final class CatalogState extends Equatable {
 
   bool get isEmpty => status == CatalogStatus.success && products.isEmpty;
 
-  // The error belongs to the failure status: leaving it drops the error.
+  // The error only exists in the failure status: moving to any other
+  // status drops it, even when the caller does not pass error: null.
   CatalogState copyWith({
     CatalogStatus? status,
     ProductQuery? query,

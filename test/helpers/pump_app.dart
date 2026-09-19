@@ -19,8 +19,9 @@ extension PumpApp on WidgetTester {
     EdgeInsets padding = EdgeInsets.zero,
   }) async {
     await binding.setSurfaceSize(size);
-    view.physicalSize = size * view.devicePixelRatio;
+    // Logical size equals physical size, so goldens are measured in dp.
     view.devicePixelRatio = 1;
+    view.physicalSize = size;
     addTearDown(() {
       view.resetPhysicalSize();
       view.resetDevicePixelRatio();

@@ -46,21 +46,15 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final bloc = context.read<CatalogBloc>();
     return BlocListener<CatalogBloc, CatalogState>(
       listenWhen: (previous, current) =>
           current.query.page == 1 && current.query != previous.query,
       listener: (_, _) => _backToTop(),
-      child: _buildTemplate(context, bloc, l10n),
+      child: _buildTemplate(context, context.l10n),
     );
   }
 
-  Widget _buildTemplate(
-    BuildContext context,
-    CatalogBloc bloc,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildTemplate(BuildContext context, AppLocalizations l10n) {
     return AppCatalogTemplate(
       title: l10n.catalogTitle,
       controller: _scrollController,
@@ -68,8 +62,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
         controller: _searchController,
         hintText: l10n.searchHint,
         searchLabel: l10n.searchAction,
-        onChanged: (text) => bloc.add(CatalogSearchChanged(text)),
-        onSubmitted: (text) => bloc.add(CatalogSearchSubmitted(text)),
+        onChanged: (text) =>
+            context.read<CatalogBloc>().add(CatalogSearchChanged(text)),
+        onSubmitted: (text) =>
+            context.read<CatalogBloc>().add(CatalogSearchSubmitted(text)),
       ),
       chips: [
         _QueryChip(

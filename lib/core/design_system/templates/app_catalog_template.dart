@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:scalapay_catalog/core/design_system/foundations/app_palette.dart';
 import 'package:scalapay_catalog/core/design_system/foundations/app_spacing.dart';
 import 'package:scalapay_catalog/core/design_system/templates/app_collapsing_title.dart';
@@ -42,11 +41,9 @@ class AppCatalogTemplate extends StatelessWidget {
               ),
             ),
             PinnedHeaderSliver(
-              child: _RevealBoundary(
-                child: ColoredBox(
-                  color: palette.grayscale100,
-                  child: _ChipsRow(chips: chips),
-                ),
+              child: ColoredBox(
+                color: palette.grayscale100,
+                child: _ChipsRow(chips: chips),
               ),
             ),
             ...body,
@@ -55,26 +52,6 @@ class AppCatalogTemplate extends StatelessWidget {
       ),
     );
   }
-}
-
-// The pinned chips are always visible, so a request to reveal one of them
-// (accessibility focus) must not move the list.
-class _RevealBoundary extends SingleChildRenderObjectWidget {
-  const _RevealBoundary({required Widget super.child});
-
-  @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderRevealBoundary();
-}
-
-class _RenderRevealBoundary extends RenderProxyBox {
-  @override
-  void showOnScreen({
-    RenderObject? descendant,
-    Rect? rect,
-    Duration duration = Duration.zero,
-    Curve curve = Curves.ease,
-  }) {}
 }
 
 class _ChipsRow extends StatelessWidget {

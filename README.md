@@ -69,13 +69,14 @@ asset.
 
 ## What the tests cover
 
-115 tests.
+119 tests.
 
 - Data: request params (page size vs 300 window), DTO parsing against a real
   response fixture, repository through Retrofit with a fake Dio adapter (ok,
   timeout, offline, 400, truncated JSON, wrong shape, end of the window).
-- Domain: price range rules, installment split, use case (name sorts applied
-  locally, paging closed, failures passed through).
+- Domain: price range rules, installment split, name sort key (case and
+  Latin accents folded, stable ties), use case (name sorts applied locally,
+  paging closed, failures passed through).
 - Bloc (`bloc_test`): immediate feedback + debounce, submit, empty result,
   failure + retry, sort and filter reload, stale responses ignored, paging,
   failed page, duplicate page, new search while a page is loading.
@@ -138,7 +139,7 @@ Behaviour:
 ## API notes
 
 Dio + Retrofit, one endpoint: `GET /v1/products/search`. Timeouts are 10 s to
-connect and 30 s to receive
+connect and 30 s to receive.
 
 `CatalogErrorMapper` maps `DioException` / JSON errors into `TimeoutError`,
 `NetworkUnavailableError`, `ServerError(statusCode)`, `InvalidResponseError`,
@@ -167,7 +168,7 @@ Things noticed while testing against the real API:
   single bound too (`maxPrice=10.0` → everything ≤ 10).
 - `selling_price` arrives as `int` or `double`. `has_image = 0` means the URL
   is not usable.
-- The response carries no installment data. The "3 rate da" line is
+- The response carries no installment data. The "3 installments of" line is
   `selling_price / 3` (`InstallmentPlan.payInThree`), which is why the card
   shows 28,33 for 85,00 € while the Figma mockup shows 23,33.
 - A malformed document fails the whole page with `InvalidResponseError`
@@ -182,7 +183,9 @@ would reshuffle on every scroll and never show the real order.
 
 What the app does: for the two name sorts it requests the relevance order for
 the whole window a query can reach (`per_page=300`, one request, 1 to 2 s), and
-`SearchProductsUseCase` sorts that window case-insensitively and closes paging.
+`SearchProductsUseCase` sorts that window ignoring case and Latin accents
+(Dart has no locale collation, so `ProductSort` folds them itself) and closes
+paging.
 The list is complete and stable, and the request stays inside the contract.
 
 This holds because 300 is the same ceiling every sort reaches through paging

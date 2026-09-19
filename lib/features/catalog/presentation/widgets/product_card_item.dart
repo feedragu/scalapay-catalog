@@ -29,7 +29,7 @@ class ProductCardItem extends StatelessWidget {
         PriceFormatter.amount(plan.amountFor(product.price)),
       ),
       imageUrl: product.imageUrl,
-      cacheManager: context.read<BaseCacheManager>(),
+      cacheManager: context.watch<BaseCacheManager>(),
     );
   }
 }

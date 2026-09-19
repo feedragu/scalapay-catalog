@@ -4,7 +4,7 @@ import 'package:scalapay_catalog/core/design_system/app_design_system.dart';
 
 import '../helpers/pump_app.dart';
 
-// Component geometry measured on the Figma frames (375x812).
+// Checks the AppSizes values against the Figma measurements (375x812 frames).
 void main() {
   testWidgets('sheet header places handle, close and title like Figma', (
     tester,
