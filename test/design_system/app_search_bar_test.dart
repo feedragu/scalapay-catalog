@@ -46,9 +46,7 @@ void main() {
     expect(fieldHasFocus(tester), isTrue);
   });
 
-  testWidgets('tapping outside the pill still blurs the field', (
-    tester,
-  ) async {
+  testWidgets('tapping outside the pill still blurs the field', (tester) async {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
     await pumpBar(tester, controller);

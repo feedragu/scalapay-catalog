@@ -55,9 +55,7 @@ dart run dart_code_linter:metrics analyze lib --set-exit-on-violation-level=warn
 
 Mutation testing (`mutation_test`, config in `mutation_test.xml`) covers the
 deterministic layers: domain rules, request building, error mapping,
-repository, bloc, presenters and config. Every mutant re-runs the unit suite,
-so it takes about 40 minutes; widgets and the design system are left out on
-purpose (little signal per minute). Needs an lcov file so uncovered lines are
+repository, bloc, presenters and config. Needs an lcov file so uncovered lines are
 skipped:
 
 ```bash
@@ -140,8 +138,7 @@ Behaviour:
 ## API notes
 
 Dio + Retrofit, one endpoint: `GET /v1/products/search`. Timeouts are 10 s to
-connect and 30 s to receive, because the first call after the host has been
-idle can take about 20 s.
+connect and 30 s to receive
 
 `CatalogErrorMapper` maps `DioException` / JSON errors into `TimeoutError`,
 `NetworkUnavailableError`, `ServerError(statusCode)`, `InvalidResponseError`,
@@ -157,7 +154,7 @@ Things noticed while testing against the real API:
   the same way: after ten pages it stops loading.
 - The brief allows `sort_by` only with `_text_match` or `selling_price`, and
   the gateway enforces exactly that: any other key (`title`, `list_price`,
-  `id`, even `foo`) or a bad direction gets a 200 with the relevance order,
+  `id`) or a bad direction gets a 200 with the relevance order,
   and in `title:asc,selling_price:asc` only `selling_price` is applied. The
   design's "Nome A-Z / Z-A" are therefore outside the API contract. See
   "Name sorting" below for what the app does about it.
@@ -178,25 +175,27 @@ Things noticed while testing against the real API:
 
 ## Name sorting
 
-The design offers "Nome A-Z / Z-A", the API cannot sort by title, and a paged
-list cannot be sorted on the client: ordering only the pages already loaded
-would reshuffle the list on every scroll and never produce the real order. I
-settled on a small compromise and wrote it down here and in the code:
+The design has "Nome A-Z / Z-A"; the API contract only sorts by `_text_match`
+and `selling_price`, and the gateway ignores any other key (see API notes).
+Sorting on the client only the pages already loaded is not an option: the list
+would reshuffle on every scroll and never show the real order.
 
-- the request stays inside the contract: for those two sorts it asks for the
-  relevance order (`sort_by=_text_match:desc`) and for the whole window the
-  API serves in one request (`per_page=300`, about 1 to 2 s);
-- `SearchProductsUseCase` sorts that window case-insensitively and closes
-  paging (`hasMore = false`), so the list the user sees is complete and never
-  reorders. It is the one place that knows about the workaround: a backend
-  sort would replace it there;
-- 300 is also the most any query can return through paging, so the
-  alphabetical list covers the same products the other sorts can reach, in one
-  request instead of ten. Relevance and price stay paged, 30 at a time.
+What the app does: for the two name sorts it requests the relevance order for
+the whole window a query can reach (`per_page=300`, one request, 1 to 2 s), and
+`SearchProductsUseCase` sorts that window case-insensitively and closes paging.
+The list is complete and stable, and the request stays inside the contract.
 
-Hiding the two options would have matched the API but not the design, and
-leaving them inert would have looked broken. For the record, the production
-Scalapay app exposes three sorts on the catalog (featured, price asc/desc).
+This holds because 300 is the same ceiling every sort reaches through paging
+(page 11 wraps to page 1), so the alphabetical list covers exactly the products
+the other sorts can show, in one request instead of ten. The cost is that first
+request, heavier than a 30-item page. Relevance and price stay paged.
+
+The workaround lives in one place, the use case; a backend sort would replace
+it there without touching the bloc or the UI.
+
+Alternatives: hiding the two options matches the API but not the design;
+leaving them inert looks broken. The production Scalapay app sidesteps the
+question with three sorts (featured, price asc/desc).
 
 ## Implementation notes
 
@@ -222,14 +221,6 @@ Scalapay app exposes three sorts on the catalog (featured, price asc/desc).
   options are radio buttons, state messages and result count are live regions.
   The 12 px grey price line (~3.4:1) and the 32 px chips come from the design.
 
-## Out of scope
-
-I kept to what is in the Figma. There is no product detail or merchant page,
-so none is implemented; `Product` already carries `id`, `merchant` and the
-image URL, and the card would only need an `onTap`.
-
-Also not done: request cancellation, a results cache, state restoration, crash
-reporting and analytics (`UnknownError` keeps the original exception for that).
 
 ## Release
 
