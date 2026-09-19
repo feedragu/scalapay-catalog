@@ -217,7 +217,9 @@ question with three sorts (featured, price asc/desc).
 - Price inputs accept digits with `,` or `.` and at most two decimals. The
   validator blocks inverted ranges before any request goes out.
 - Italian only, locale-locked to match the design, with the strings in an ARB
-  file.
+  file. The price line ("85,00€ or / 3 installments of €28,33") is English in
+  the Figma and is kept as designed; it is the `fullPrice` / `installments`
+  pair in the ARB, so localising it is a one-line change.
 - Palette names follow the Figma color styles (`lilac900`, `grayscale700`).
 - Accessibility checked with the Android accessibility tree on a Pixel 9:
   chips announce the applied filter/sort, cards are read as one item, sort
